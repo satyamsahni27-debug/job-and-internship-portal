@@ -43,7 +43,7 @@ const Navbar = () => {
                 alignItems: 'center',
                 flexWrap: 'nowrap' // किसी भी चीज को नीचे टूटने नहीं देगा
             }}>
-                
+
                 {/* 🎯 लेफ्ट साइड: लोगो */}
                 <div>
                     <Link to="/" style={{ textDecoration: 'none' }}>
@@ -85,7 +85,7 @@ const Navbar = () => {
                     {/* यूज़र प्रोफाइल ड्रॉपडाउन बटन */}
                     {currentUser ? (
                         <div style={{ position: 'relative' }}>
-                            <button 
+                            <button
                                 onClick={() => setShowDropdown(!showDropdown)}
                                 style={{
                                     display: 'flex',
@@ -112,18 +112,56 @@ const Navbar = () => {
                                     backgroundColor: '#ffffff',
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                                     borderRadius: '8px',
-                                    padding: '10px',
-                                    minWidth: '150px',
+                                    padding: '15px',
+                                    minWidth: '220px',
+                                    zIndex: 1000,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: '8px',
                                     border: '1px solid #e5e7eb'
                                 }}>
-                                    <div style={{ padding: '2px 8px', fontSize: '12px', color: '#6B7280', borderBottom: '1px solid #f3f4f6', pb: '5px' }}>
-                                        Role: {currentUser.role}
+                                    {/* यूज़र का नाम और रोल */}
+                                    <div style={{ padding: '2px 8px', fontSize: '14px', color: '#111827', borderBottom: '1px solid #f3f4f6', pb: '5px', fontWeight: 'bold', textAlign: 'left' }}>
+                                        <div>{currentUser?.name}</div>
+                                        <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal', marginTop: '2px' }}>
+                                            Role: {currentUser?.role}
+                                        </div>
                                     </div>
-                                    <span onClick={() => { navigate('/account-settings'); setShowDropdown(false); }} style={{ cursor: 'pointer', fontSize: '13px', padding: '4px 8px', color: '#374151', fontWeight: 500 }}>⚙️ Settings</span>
-                                    <span onClick={logoutHandler} style={{ cursor: 'pointer', fontSize: '13px', padding: '4px 8px', color: '#EF4444', fontWeight: 'bold' }}>🚪 Logout</span>
+
+                                    {/* मेन्यू लिंक्स और सुंदर आइकॉन्स */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left' }}>
+
+                                        {/* 📁 View Profile (सभी के लिए) */}
+                                        <span onClick={() => { navigate('/profile'); setShowDropdown(false); }} style={{ cursor: 'pointer', fontSize: '13px', padding: '6px 8px', color: '#374151', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            📁 View Profile
+                                        </span>
+
+                                        {/* 📊 Admin Dashboard (केवल Recruiter के लिए) */}
+                                        {currentUser?.role?.toLowerCase() === 'recruiter' && (
+                                            <span onClick={() => { navigate('/admin/companies'); setShowDropdown(false); }} style={{ cursor: 'pointer', fontSize: '13px', padding: '6px 8px', color: '#374151', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                📊 Admin Dashboard
+                                            </span>
+                                        )}
+
+                                        {/* 📝 My Applications (केवल Student के लिए) */}
+                                        {currentUser?.role?.toLowerCase() === 'student' && (
+                                            <span onClick={() => { navigate('/my-applications'); setShowDropdown(false); }} style={{ cursor: 'pointer', fontSize: '13px', padding: '6px 8px', color: '#374151', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                📝 My Applications
+                                            </span>
+                                        )}
+
+                                        {/* ⚙️ Account Settings */}
+                                        <span onClick={() => { navigate('/account-settings'); setShowDropdown(false); }} style={{ cursor: 'pointer', fontSize: '13px', padding: '6px 8px', color: '#374151', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            ⚙️ Account Settings
+                                        </span>
+
+                                        <hr style={{ margin: '4px 0', border: 0, borderTop: '1px solid #f3f4f6' }} />
+
+                                        {/* 🚪 Logout */}
+                                        <span onClick={logoutHandler} style={{ cursor: 'pointer', fontSize: '13px', padding: '6px 8px', color: '#EF4444', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            🚪 Logout
+                                        </span>
+                                    </div>
                                 </div>
                             )}
                         </div>
