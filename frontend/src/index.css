@@ -1,0 +1,136 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* =========================================================================
+   🌟 ALL-IN-ONE GLOBAL RESPONSIVE MEDIA QUERIES (NO FUNCTION DAMAGE)
+   ========================================================================= */
+
+/* 📱 1. मोबाइल स्क्रीन के लिए (Max Width: 768px) */
+@media screen and (max-width: 768px) {
+    
+    /* 🌐 ग्लोबल कंटेनर्स को ऑटो-फिट करना */
+    div[style*="maxWidth"], div[style*="max-width"] {
+        max-width: 100% !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+        margin: 20px auto !important;
+    }
+
+    /* 📊 सभी फ्लेक्स बॉक्स (Flex Layouts) को वर्टिकल (कॉलम) बनाना */
+    div[style*="display: flex"], div[style*="display:flex"] {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+
+    /* 🧭 नेवबार और बटन्स का फ्लेक्स ठीक करना (जो रो में होने चाहिए) */
+    div[style*="justify-content: space-between"] {
+        flex-direction: row !important; /* हेडर के बटन्स एक लाइन में रहें */
+        flex-wrap: wrap !important;
+    }
+
+    /* 📝 इनपुट फील्ड्स और फॉर्म्स को 100% चौड़ा करना */
+    input, select, textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 🗂️ टेबल्स को स्क्रोल-एबल (Scrollable) बनाना ताकि डेटा न कटे */
+    div[style*="overflowX: auto"], div[style*="overflow-x: auto"], .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+    }
+
+    table {
+        min-width: 600px !important; /* मोबाइल में स्क्रोल होगा, सिकुड़ेगा नहीं */
+    }
+
+    /* 🔳 बटन्स को मोबाइल फ्रेंडली बनाना */
+    button {
+        width: 100% !important; /* मोबाइल में बटन पूरे स्क्रीन पर अच्छे लगते हैं */
+        max-width: 100% !important;
+        text-align: center !important;
+        margin-bottom: 5px;
+    }
+
+    /* नेवबार के अंदर के बटन्स को फुल विड्थ नहीं करना है */
+    nav button, div[style*="padding: 15px 40px"] button, div[style*="justify-content: space-between"] button {
+        width: auto !important;
+    }
+
+    /* 🎯 पॉप-अप मॉडल्स (Applicants View / Edit Modal) */
+    div[style*="position: fixed"] > div[style*="backgroundColor: #fff"], 
+    div[style*="position: fixed"] > div[style*="background-color: rgb(255, 255, 255)"] {
+        width: 95% !important;
+        padding: 15px !important;
+        max-height: 90vh !important;
+    }
+}
+
+/* 📑 2. टैबलेट स्क्रीन के लिए (Width: 769px से 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    div[style*="maxWidth"], div[style*="max-width"] {
+        max-width: 90% !important;
+    }
+}
+/* =========================================================================
+   🚀 SMARTPHONE NAVBAR LAYOUT FIX (NO MORE BREAKING LINES)
+   ========================================================================= */
+
+@media screen and (max-width: 768px) {
+    /* 1. मुख्य नेवबार कंटेनर को एक परफेक्ट रो में लॉक करना */
+    div[style*="box-shadow"][style*="backgroundColor: #ffffff"],
+    div[style*="box-shadow"][style*="background-color: rgb(255, 255, 255)"],
+    nav {
+        display: flex !important;
+        flex-direction: row !important;      /* हमेशा एक सीधी लाइन में रहेगा भाई */
+        flex-wrap: nowrap !important;        /* एलिमेंट्स को नीचे टूटने से रोकेगा */
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 10px 12px !important;       /* मोबाइल के हिसाब से सही पैडिंग */
+        height: 60px !important;
+    }
+
+    /* 2. लोगो का साइज मोबाइल में थोड़ा सही करना */
+    div[style*="box-shadow"] h1, 
+    div[style*="box-shadow"] h2,
+    .logo-text {
+        font-size: 18px !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    /* 3. लिंक्स (Home, Jobs, Browse) और प्रोफाइल को संभालने वाला कंटेनर */
+    div[style*="display: flex"] {
+        /* सिर्फ नेवबार के अंदर वाले फ्लेक्स ग्रुप को सीधे रखने के लिए */
+    }
+
+    /* नेवबार के सभी लिंक्स को एक साथ दाईं तरफ समेटना */
+    div[style*="justify-content: space-between"] > div {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 10px !important; /* मोबाइल में स्पेसिंग थोड़ी कम */
+    }
+
+    /* 4. टेक्स्ट लिंक्स (Home, Jobs, Browse) का साइज और स्टाइल भाई */
+    div[style*="justify-content: space-between"] a,
+    div[style*="justify-content: space-between"] span {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        text-decoration: none !important;
+    }
+
+    /* 5. प्रोफाइल बटन (ankita 🔽) को छोटा और फिट करना */
+    button[style*="border: 1px solid"],
+    div[style*="cursor: pointer"] {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        width: auto !important; /* मोबाइल बटन फुल-विड्थ रूल से बाहर */
+    }
+}
