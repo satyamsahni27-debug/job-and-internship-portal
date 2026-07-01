@@ -20,38 +20,53 @@ const Home = () => {
 
     const currentUser = user || JSON.parse(sessionStorage.getItem('jobPortalUser'));
 
+    // =========================================================================
+    // 🎯 सुरक्षित और आइसोलेटेड क्लियर डेटा हैंडलर (फिक्स किया हुआ भाई)
+    // =========================================================================
     const clearDataHandler = () => {
-    if (!currentUser) {
-        alert("Please log in first! 🔑");
-        return;
-    }
-
-    // 👨‍🎓 अगर लॉगिन करने वाला यूजर एक STUDENT है
-    if (currentUser.role?.toLowerCase() === 'student') {
-        if (window.confirm("Do you want to clear the history of all the jobs you have applied for? ")) {
-            const allApplications = JSON.parse(localStorage.getItem('jobPortalApplications')) || [];
-            
-            // 🎯 सिर्फ इस स्टूडेंट की एप्लिकेशन्स को हटाओ, बाकी बच्चों का डेटा सेफ रहेगा
-            const remainingApplications = allApplications.filter(app => app.studentEmail !== currentUser.email);
-            
-            localStorage.setItem('jobPortalApplications', JSON.stringify(remainingApplications));
-            if (typeof setApplications === 'function') setApplications(remainingApplications);
-
-            alert("The count of jobs you applied for has been reset!🎉");
-            window.location.reload();
+        if (!currentUser) {
+            alert("Please log in first! 🔑");
+            return;
         }
-    } 
-    // 👔 अगर लॉगिन करने वाला यूजर एक RECRUITER है
-    else if (currentUser.role?.toLowerCase() === 'recruiter') {
-        if (window.confirm("Recruiter, do you really want to clear all the global testing data? This will delete all the jobs.")) {
-            localStorage.removeItem('jobPortalApplications');
-            localStorage.removeItem('jobPortalAllJobs');
-            if (typeof setApplications === 'function') setApplications([]);
-            alert("All the test data has been wiped clean!");
-            window.location.reload();
+
+        // 👨‍🎓 1. अगर लॉगिन करने वाला यूजर एक STUDENT है
+        if (currentUser.role?.toLowerCase() === 'student') {
+            if (window.confirm("Do you want to clear the history of all the jobs you have applied for?")) {
+                const allApplications = JSON.parse(localStorage.getItem('jobPortalApplications')) || [];
+                
+                // 🌟 सिर्फ इस स्टूडेंट की खुद की एप्लिकेशन्स हटाओ, बाकी बच्चों का डेटा सेफ रहेगा
+                const remainingApplications = allApplications.filter(app => app.studentEmail !== currentUser.email);
+                
+                localStorage.setItem('jobPortalApplications', JSON.stringify(remainingApplications));
+                if (typeof setApplications === 'function') setApplications(remainingApplications);
+
+                alert("The count of jobs you applied for has been reset! 🎉");
+                window.location.reload();
+            }
+        } 
+        // 👔 2. अगर लॉगिन करने वाला यूजर एक RECRUITER है (🎯 100% प्राइवेट आइसोलेशन)
+        else if (currentUser.role?.toLowerCase() === 'recruiter') {
+            if (window.confirm("क्या आप वाकई अपनी पोस्ट की हुई सभी नौकरियों और उनपर आई एप्लिकेशन्स को साफ़ करना चाहते हैं भाई?")) {
+                
+                // 🌟 सुरक्षा फ़िल्टर 1: सिर्फ इस रिक्रूटर की जॉब्स को हटाओ, बाकी रिक्रूटर्स का डेटा बिल्कुल सुरक्षित रखो
+                const remainingJobs = allPortalJobs.filter(job => job.createdById !== currentUser.id);
+                
+                // 🌟 सुरक्षा फ़िल्टर 2: सिर्फ इस रिक्रूटर की जॉब्स पर आई एप्लिकेशन्स हटाओ, ताकि बाकी बच्चों का स्टेटस न बिगड़े
+                const remainingApps = allPortalApps.filter(app => app.recruiterId !== currentUser.id);
+                
+                // लोकल स्टोरेज में अपडेटेड सुरक्षित डेटा वापस सेव किया
+                localStorage.setItem('jobPortalAllJobs', JSON.stringify(remainingJobs));
+                localStorage.setItem('jobPortalApplications', JSON.stringify(remainingApps));
+                
+                // ग्लोबल स्टेट अपडेट करो
+                if (typeof setAllJobs === 'function') setAllJobs(remainingJobs);
+                if (typeof setApplications === 'function') setApplications(remainingApps);
+
+                alert("Your posted jobs and their applicant data have been cleared successfully! 🤝");
+                window.location.reload();
+            }
         }
-    }
-};
+    };
 
     // =========================================================================
     // 🌟 डायनामिक कैटेगरी फिक्स: लाइव काउंट्स निकालना भाई (स्टूडेंट को सब दिखेगा)
@@ -81,7 +96,7 @@ const Home = () => {
     // =========================================================================
     if (currentUser && currentUser.role?.toLowerCase() === 'recruiter') {
         
-        // 🌟 जादुई फ़िल्टर: सिर्फ इस पर्टिकुलर रिक्रूटर की जॉब्स और एप्लिकेशन्स निकालें
+        // जादुई फ़िल्टर: सिर्फ इस पर्टिकुलर रिक्रूटर की जॉब्स और एप्लिकेशन्स निकालें
         const myJobs = allPortalJobs.filter(job => job.createdById === currentUser?.id);
         const myReceivedApplications = allPortalApps.filter(app => app.recruiterId === currentUser?.id);
 
@@ -163,7 +178,7 @@ const Home = () => {
                     Search & Get Your <br /><span style={{ color: '#6A38C2' }}>Dream Job & Internship</span>
                 </h1>
                 
-                <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', fontSize: '14px', fontWeight: 600, alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
+                <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', fontSize: '14px', fontWeight: '600', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
                     <span style={{ backgroundColor: '#E0F2FE', color: '#0369A1', padding: '6px 12px', borderRadius: '6px' }}>📝 Total Applied: {myTotalApplicationsCount}</span>
                     <span style={{ backgroundColor: '#F5F3FF', color: '#7C3AED', padding: '6px 12px', borderRadius: '6px' }}>💼 Available: {allPortalJobs.length}</span>
                     <button onClick={clearDataHandler} style={{ padding: '6px 12px', backgroundColor: '#EF4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>🗑️ Reset Count</button>

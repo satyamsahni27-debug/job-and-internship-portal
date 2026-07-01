@@ -29,7 +29,7 @@ const JobDetails = () => {
     }
   }, [id]);
 
-  // 🎯 स्टेप 4: अप्लाई बटन का असली फंक्शन
+  // 🎯 अप्लाई बटन का असली फंक्शन
   const applyJobHandler = () => {
     const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
     
@@ -145,6 +145,25 @@ const JobDetails = () => {
               <span>Experience: {selectedJob?.experience} Years</span>
             </div>
           </div>
+
+          {/* =========================================================================
+              🔥 🌟 रिक्रूटर्स द्वारा जोड़े गए डायनामिक कस्टम सेक्शन्स यहाँ रेंडर होंगे भाई
+             ========================================================================= */}
+          {selectedJob?.extraInformation && selectedJob.extraInformation.length > 0 && (
+            <div style={{ marginTop: '25px', borderTop: '1px solid #E5E7EB', paddingTop: '15px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', marginBottom: '15px' }}>📋 Additional Requirements & Perks</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
+                {selectedJob.extraInformation.map((info, i) => (
+                  <div key={i} style={{ padding: '15px', backgroundColor: '#ffffff', borderRadius: '8px', borderLeft: '5px solid #6A38C2', boxShadow: '0 2px 6px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB' }}>
+                    <h3 style={{ fontWeight: 'bold', color: '#6A38C2', fontSize: '15px', margin: '0 0 5px 0', textTransform: 'capitalize' }}>{info.heading}</h3>
+                    <p style={{ color: '#4B5563', fontSize: '14px', margin: 0, lineHeight: '1.4' }}>{info.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* ========================================================================= */}
+
         </div>
 
       </div>

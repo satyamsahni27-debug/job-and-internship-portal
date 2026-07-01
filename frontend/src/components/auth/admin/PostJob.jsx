@@ -1,110 +1,144 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../shared/Navbar';
-import { AuthContext } from '../../../context/AuthContext';
 
 const PostJob = () => {
-    const { allJobs, setAllJobs } = useContext(AuthContext);
     const navigate = useNavigate();
+    const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
 
+    // 📝 स्टैंडर्ड फ़ील्ड्स का स्टेट
     const [input, setInput] = useState({
         title: "",
-        description: "",
-        requirements: "", // स्किल्स
-        salary: "",
         location: "",
+        salary: "",
         jobType: "Full-Time",
-        experience: "",  // अनुभव
-        position: ""     // कुल पद
+        experience: "",
+        openings: "",
+        skills: "",
+        description: ""
     });
 
-    const changeEventHandler = (e) => {
+    // 🚀 🌟 कलेक्टिव कस्टम सेक्शंस का स्टेट
+    const [extraFields, setExtraFields] = useState([]);
+
+    const changeInputHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
+    };
+
+    // ➕ कस्टम सेक्शन इनपुट रो (Row) जोड़ने का फ़ंक्शन
+    const addExtraFieldHandler = () => {
+        setExtraFields([...extraFields, { heading: "", value: "" }]);
+    };
+
+    // ❌ कस्टम सेक्शन रो हटाने का फ़ंक्शन
+    const removeExtraFieldHandler = (index) => {
+        const updatedFields = extraFields.filter((_, i) => i !== index);
+        setExtraFields(updatedFields);
+    };
+
+    // ✍ * ककस्टम सेक्शंस की वैल्यू चेंज हैंडलर
+    const handleExtraFieldChange = (index, fieldType, val) => {
+        const updatedFields = [...extraFields];
+        updatedFields[index][fieldType] = val;
+        setExtraFields(updatedFields);
     };
 
     const submitHandler = (e) => {
         e.preventDefault();
+        
+        if (!currentUser) {
+            alert("कृपया पहले लॉगिन करें भाई! 🔑");
+            return;
+        }
 
-        // शुद्ध नंबर स्ट्रिंग यूनिक आईडी भाई
-        // 🌟 सेशन स्टोरेज से लॉगिन किए हुए रिक्रूटर का डेटा निकाला
-        const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
+        const allJobs = JSON.parse(localStorage.getItem('jobPortalAllJobs')) || [];
 
+        // ✨ नया जॉब ऑब्जेक्ट (एक्सट्रा कस्टम इंफॉर्मेशन के साथ)
         const newJob = {
-            ...input,
             id: Date.now().toString(),
-            createdById: currentUser?.id // 🎯 यह लाइन जॉब के साथ रिक्रूटर की ID को हमेशा के लिए बांध देगी भाई!
+            ...input,
+            createdById: currentUser.id,
+            companyName: currentUser.name || "Tech Company",
+            extraInformation: extraFields.filter(f => f.heading.trim() !== "" && f.value.trim() !== "") 
         };
 
-        const updatedJobs = [newJob, ...allJobs];
-
-        setAllJobs(updatedJobs);
-        localStorage.setItem('jobPortalAllJobs', JSON.stringify(updatedJobs));
-
-        alert("🎉The new listing has been successfully posted!");
-        navigate("/admin/jobs");
+        localStorage.setItem('jobPortalAllJobs', JSON.stringify([...allJobs, newJob]));
+        alert("Job posted successfully with your custom sections! 🎉");
+        navigate('/');
     };
 
     return (
-        <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+        <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', backgroundColor: '#f0edfa', paddingBottom: '40px' }}>
             <Navbar />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '30px 20px' }}>
-                <form onSubmit={submitHandler} style={{ backgroundColor: '#ffffff', padding: '30px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', width: '100%', maxWidth: '650px' }}>
-                    <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#6A38C2', marginBottom: '20px', textAlign: 'center' }}>Post A New Job / Internship</h2>
-
-                    {/* रो 1: टाइटल और लोकेशन */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+            <div style={{ maxWidth: '700px', margin: '30px auto', padding: '25px', backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#6A38C2', textAlign: 'center', marginBottom: '25px' }}>Post A New Job / Internship</h2>
+                
+                <form onSubmit={submitHandler}>
+                    {/* 🗂️ Grid for standard inputs */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '15px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>Job Title / Role</label>
-                            <input type="text" name="title" value={input.title} onChange={changeEventHandler} required style={{ width: '92%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px' }} placeholder="e.g. Web Development Intern" />
+                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>Job Title / Role</label>
+                            <input type="text" name="title" value={input.title} onChange={changeInputHandler} placeholder="e.g. Web Development Intern" required style={{ width: '92%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>Location</label>
-                            <input type="text" name="location" value={input.location} onChange={changeEventHandler} required style={{ width: '92%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px' }} placeholder="e.g. Noida / Remote" />
-                        </div>
-                    </div>
-
-                    {/* रो 2: सैलरी और जॉब टाइप */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>Salary / Stipend</label>
-                            <input type="text" name="salary" value={input.salary} onChange={changeEventHandler} required style={{ width: '92%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px' }} placeholder="e.g. 20k/Month or 4 LPA" />
+                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>Location</label>
+                            <input type="text" name="location" value={input.location} onChange={changeInputHandler} placeholder="e.g. Noida / Remote" required style={{ width: '92%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>Job Type</label>
-                            <select name="jobType" value={input.jobType} onChange={changeEventHandler} style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px', backgroundColor: '#fff' }}>
+                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>Salary / Stipend</label>
+                            <input type="text" name="salary" value={input.salary} onChange={changeInputHandler} placeholder="e.g. 20k/Month or 4 LPA" required style={{ width: '92%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>Job Type</label>
+                            <select name="jobType" value={input.jobType} onChange={changeInputHandler} style={{ width: '98%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', backgroundColor: '#fff' }}>
                                 <option value="Full-Time">Full-Time</option>
                                 <option value="Part-Time">Part-Time</option>
-                                <option value="Remote">Remote</option>
-                                <option value="Internship">Internship 🎓</option>
+                                <option value="Internship">Internship</option>
                             </select>
                         </div>
-                    </div>
-
-                    {/* 🌟 रो 3 (NEW): आवश्यक अनुभव और कुल रिक्तियां (Openings) */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>Experience Required</label>
-                            <input type="text" name="experience" value={input.experience} onChange={changeEventHandler} required style={{ width: '92%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px' }} placeholder="e.g. Freshers / 1-2 Years" />
+                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>Experience Required</label>
+                            <input type="text" name="experience" value={input.experience} onChange={changeInputHandler} placeholder="e.g. Freshers / 1-2 Years" required style={{ width: '92%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>No. of Openings</label>
-                            <input type="number" name="position" value={input.position} onChange={changeEventHandler} required style={{ width: '92%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px' }} placeholder="e.g. 3" min="1" />
+                            <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>No. of Openings</label>
+                            <input type="number" name="openings" value={input.openings} onChange={changeInputHandler} placeholder="e.g. 3" required style={{ width: '92%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
                         </div>
                     </div>
 
-                    {/* 🌟 फ़ील्ड 4 (NEW): की-स्किल्स / रिक्वायरमेंट्स */}
                     <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>Required Skills / Requirements</label>
-                        <input type="text" name="requirements" value={input.requirements} onChange={changeEventHandler} required style={{ width: '96%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px' }} placeholder="e.g. React, JavaScript, Node.js (comma separated)" />
+                        <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>Required Skills / Requirements</label>
+                        <input type="text" name="skills" value={input.skills} onChange={changeInputHandler} placeholder="e.g. React, JavaScript, Node.js (comma separated)" style={{ width: '97%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
                     </div>
 
-                    {/* रो 5: डिस्क्रिप्शन */}
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 500, fontSize: '14px' }}>Description</label>
-                        <textarea name="description" value={input.description} onChange={changeEventHandler} required style={{ width: '96%', padding: '10px', border: '1px solid #ccc', borderRadius: '6px', height: '60px', resize: 'none' }} placeholder="Describe the responsibilities or internship duration..." />
+                        <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', display: 'block', marginBottom: '5px' }}>Description</label>
+                        <textarea name="description" value={input.description} onChange={changeInputHandler} placeholder="Describe the responsibilities or internship duration..." rows="3" required style={{ width: '97%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', resize: 'vertical' }}></textarea>
                     </div>
 
-                    <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#6A38C2', color: 'white', border: 'none', borderRadius: '6px', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    {/* =============================================================
+                        🔥 🌟 डाइनामिक कस्ट्रम सेक्शन ज़ोन
+                       ============================================================= */}
+                    <div style={{ borderTop: '1px dashed #D1D5DB', paddingTop: '15px', marginBottom: '25px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                            <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#374151', margin: 0 }}>✨ Extra Sections / Custom Information</h4>
+                            <button type="button" onClick={addExtraFieldHandler} style={{ padding: '8px 14px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                                + Add Custom Field
+                            </button>
+                        </div>
+
+                        {extraFields && extraFields.map((field, index) => (
+                            <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px', width: '99%' }}>
+                                <input type="text" value={field.heading} onChange={(e) => handleExtraFieldChange(index, 'heading', e.target.value)} placeholder="Title (e.g. Perks / Bond Period)" style={{ flex: 1, padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px' }} />
+                                <input type="text" value={field.value} onChange={(e) => handleExtraFieldChange(index, 'value', e.target.value)} placeholder="Details (e.g. Free Meals / 6 Months)" style={{ flex: 2, padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px' }} />
+                                <button type="button" onClick={() => removeExtraFieldHandler(index)} style={{ padding: '10px 14px', backgroundColor: '#EF4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                                    🗑️
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#6A38C2', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>
                         Post Listing Now 🚀
                     </button>
                 </form>
