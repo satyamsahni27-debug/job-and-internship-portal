@@ -13,7 +13,7 @@ const AdminJobs = () => {
     const [openModal, setOpenModal] = useState(false);
 
     const deleteJobHandler = (index) => {
-        if (window.confirm("क्या आप वाकई इस जॉब को डिलीट करना चाहते हैं भाई?")) {
+        if (window.confirm("Do you really want to delete this job!")) {
             const updatedJobs = allJobs.filter((_, i) => i !== index);
             setAllJobs(updatedJobs);
             localStorage.setItem('jobPortalAllJobs', JSON.stringify(updatedJobs));
@@ -35,7 +35,13 @@ const AdminJobs = () => {
         alert(`Status updated to: ${newStatus === 'Selected' ? 'Selected for Interview' : 'Rejected'}`);
     };
 
-    const currentJobs = JSON.parse(localStorage.getItem('jobPortalAllJobs')) || allJobs;
+   const allPortalJobs = JSON.parse(localStorage.getItem('jobPortalAllJobs')) || allJobs;
+
+// 🌟 लॉगिन यूज़र (AuthContext से) का फ्रेश डेटा बैकअप के साथ
+const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
+
+// 🎯 सिर्फ उसी रिक्रूटर की जॉब्स फ़िल्टर करें जो लॉगिन है
+const currentJobs = allPortalJobs.filter(job => job.createdById === currentUser?.id);
     const liveAppsForModal = JSON.parse(localStorage.getItem('jobPortalApplications')) || applications;
     
     // 🌟 लाइव एडमिन सर्च फ़िल्टर
@@ -64,7 +70,7 @@ const AdminJobs = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
                     <div>
                         <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827', margin: 0 }}>Posted Positions Management ({currentJobs.length})</h2>
-                        <p style={{ margin: '4px 0 0 0', color: '#6B7280', fontSize: '14px' }}>यहाँ से आप आवेदकों के स्टेटस और जॉब्स को मैनेज कर सकते हैं।</p>
+                        <p style={{ margin: '4px 0 0 0', color: '#6B7280', fontSize: '14px' }}>From here, you can manage applicant statuses and jobs.।</p>
                     </div>
                     <button onClick={() => navigate("/admin/jobs/create")} style={{ padding: '10px 20px', backgroundColor: '#6A38C2', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                         + Post New Job
@@ -99,7 +105,7 @@ const AdminJobs = () => {
                         <tbody>
                             {filteredAdminJobs.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" style={{ padding: '30px', textAlign: 'center', color: '#9CA3AF' }}>कोई लिस्टिंग रिकॉर्ड नहीं मिला भाई!</td>
+                                    <td colSpan="7" style={{ padding: '30px', textAlign: 'center', color: '#9CA3AF' }}>There are no listing records.!</td>
                                 </tr>
                             ) : (
                                 filteredAdminJobs.map((job, index) => {
@@ -146,7 +152,7 @@ const AdminJobs = () => {
                             </div>
                             
                             {currentApplicants.length === 0 ? (
-                                <p style={{ color: '#6B7280', textAlign: 'center' }}>इस जॉब पर अभी तक किसी ने अप्लाई नहीं किया है।</p>
+                                <p style={{ color: '#6B7280', textAlign: 'center' }}>No one has applied for this job yet!</p>
                             ) : (
                                 currentApplicants.map((app, i) => (
                                     <div key={app.id || i} style={{ border: '1px solid #E5E7EB', padding: '15px', borderRadius: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

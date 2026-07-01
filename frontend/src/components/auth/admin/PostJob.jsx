@@ -24,19 +24,23 @@ const PostJob = () => {
 
     const submitHandler = (e) => {
         e.preventDefault();
-        
+
         // शुद्ध नंबर स्ट्रिंग यूनिक आईडी भाई
+        // 🌟 सेशन स्टोरेज से लॉगिन किए हुए रिक्रूटर का डेटा निकाला
+        const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
+
         const newJob = {
             ...input,
-            id: Date.now().toString() 
+            id: Date.now().toString(),
+            createdById: currentUser?.id // 🎯 यह लाइन जॉब के साथ रिक्रूटर की ID को हमेशा के लिए बांध देगी भाई!
         };
 
         const updatedJobs = [newJob, ...allJobs];
-        
+
         setAllJobs(updatedJobs);
         localStorage.setItem('jobPortalAllJobs', JSON.stringify(updatedJobs));
 
-        alert("🎉 नई लिस्टिंग सफलतापूर्वक पोस्ट हो गई है भाई!");
+        alert("🎉The new listing has been successfully posted!");
         navigate("/admin/jobs");
     };
 
@@ -46,7 +50,7 @@ const PostJob = () => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '30px 20px' }}>
                 <form onSubmit={submitHandler} style={{ backgroundColor: '#ffffff', padding: '30px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', width: '100%', maxWidth: '650px' }}>
                     <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#6A38C2', marginBottom: '20px', textAlign: 'center' }}>Post A New Job / Internship</h2>
-                    
+
                     {/* रो 1: टाइटल और लोकेशन */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                         <div>

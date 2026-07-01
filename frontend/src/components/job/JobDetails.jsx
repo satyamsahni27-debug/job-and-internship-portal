@@ -1,12 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../shared/Navbar';
 import { MapPin, Briefcase, DollarSign, Calendar, Users, Share2, Heart, ArrowLeft, Globe } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const JobDetails = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // URL से जॉब की ID निकाली
+  
   const [isSaved, setIsSaved] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+
+  // 🌟 यूज़र और जॉब का डेटा लोड करना
+  useEffect(() => {
+    const allJobs = JSON.parse(localStorage.getItem('jobPortalAllJobs')) || [];
+    // URL की ID के हिसाब से सही जॉब ढूंढें
+    const currentJob = allJobs.find(j => j.id === id || j._id === id);
+    setSelectedJob(currentJob);
+
+    // चेक करें कि क्या यूज़र पहले ही अप्लाई कर चुका है
+    const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
+    if (currentUser && currentJob) {
+      const allApplications = JSON.parse(localStorage.getItem('jobPortalApplications')) || [];
+      const alreadyApplied = allApplications.some(
+        app => app.jobId === (currentJob.id || currentJob._id) && app.studentId === currentUser.id
+      );
+      setIsApplied(alreadyApplied);
+    }
+  }, [id]);
+
+  // 🎯 स्टेप 4: अप्लाई बटन का असली फंक्शन
+  const applyJobHandler = () => {
+    const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
+    
+    if (!currentUser) {
+      alert("कृपया अप्लाई करने के लिए पहले लॉगिन करें भाई! 🔑");
+      navigate('/login');
+      return;
+    }
+
+    if (!selectedJob) {
+      alert("जॉब का डेटा नहीं मिला भाई!");
+      return;
+    }
+
+    const allApplications = JSON.parse(localStorage.getItem('jobPortalApplications')) || [];
+
+    // ✨ नया एप्लिकेशन ऑब्जेक्ट (रिक्रूटर मैपिंग के साथ)
+    const newApplication = {
+      id: Date.now().toString(),
+      jobId: selectedJob.id || selectedJob._id,
+      jobTitle: selectedJob.title,
+      studentId: currentUser.id,
+      studentName: currentUser.name,
+      studentEmail: currentUser.email,
+      
+      // 🎯 सबसे ज़रूरी लाइन: जॉब पोस्ट करने वाले रिक्रूटर की ID यहाँ लॉक हो गई!
+      recruiterId: selectedJob.createdById, 
+      
+      status: 'Pending'
+    };
+
+    const updatedApplications = [...allApplications, newApplication];
+    localStorage.setItem('jobPortalApplications', JSON.stringify(updatedApplications));
+    
+    setIsApplied(true);
+    alert("It was applied successfully! 🎉");
+  };
+
+  if (!selectedJob) {
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <Navbar />
+        <div className="text-center mt-20 font-medium text-gray-500">There are no jobs available!</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen pb-10">
@@ -14,134 +83,68 @@ const JobDetails = () => {
       
       <div className="max-w-5xl mx-auto mt-5 px-4">
         {/* पीछे जाने का बटन */}
-        <button onClick={() => navigate('/jobs')} className="flex items-center gap-1 text-sm text-gray-500 hover:text-purple-700 mb-5 transition-colors">
+        <button onClick={() => navigate('/jobs')} className="flex items-center gap-1 text-sm text-gray-500 hover:text-purple-700 transition-all mb-5">
           <ArrowLeft size={16} /> Back to Jobs
         </button>
 
-        {/* मेन हेडर कार्ड */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        {/* 🏢 मेन हेडर कार्ड */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-purple-700 text-white rounded-xl flex items-center justify-center font-bold text-2xl shadow-md">
-              T
+            <div className="w-16 h-16 bg-purple-700 text-white rounded-xl flex items-center justify-center font-bold text-2xl">
+              {selectedJob?.title?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="font-bold text-2xl text-gray-900">Senior Frontend Developer</h1>
+              <h1 className="font-bold text-2xl text-gray-900">{selectedJob?.title}</h1>
               <div className="flex items-center gap-2 mt-1">
-                <p className="font-semibold text-purple-700 hover:underline cursor-pointer flex items-center gap-0.5">
-                  Tech Mahindra <span className="text-blue-500 text-xs">✔</span>
+                <p className="font-semibold text-purple-700 hover:underline cursor-pointer flex items-center gap-1">
+                  {selectedJob?.companyName || "Tech Company"}
                 </p>
-                <span className="text-gray-300">|</span>
-                <p className="text-sm text-gray-500 flex items-center gap-0.5"><MapPin size={14} /> Noida, India</p>
               </div>
             </div>
           </div>
 
-          {/* शेयर, सेव और अप्लाई बटन्स */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <button className="p-2.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors" title="Copy Link">
-              <Share2 size={18} />
-            </button>
+          {/* 🎯 अप्लाई और सेव बटन्स */}
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSaved(!isSaved)} 
-              className={`p-2.5 rounded-lg border transition-colors ${isSaved ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+              className={`p-3 rounded-xl border transition-all ${isSaved ? 'bg-red-50 border-red-200 text-red-500' : 'border-gray-200 text-gray-400 hover:border-gray-300'}`}
             >
-              <Heart size={18} fill={isSaved ? "currentColor" : "none"} />
+              <Heart size={20} fill={isSaved ? "currentColor" : "none"} />
             </button>
+            
             <button 
-              onClick={() => setIsApplied(true)}
-              className={`flex-1 md:flex-none px-6 py-2.5 font-semibold rounded-lg text-sm transition-all shadow-sm ${isApplied ? 'bg-green-600 text-white cursor-not-allowed' : 'bg-purple-700 text-white hover:bg-purple-800'}`}
+              onClick={applyJobHandler}
               disabled={isApplied}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all ${isApplied ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-purple-700 text-white hover:bg-purple-800'}`}
             >
-              {isApplied ? "✓ Applied" : "Apply Now"}
+              {isApplied ? "Already Applied" : "Apply Now"}
             </button>
           </div>
         </div>
 
-        {/* दो कॉलम्स लेआउट */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 📋 जॉब डिस्क्रिप्शन डिटेल्स */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-5">
+          <h2 className="font-bold text-lg text-gray-900 mb-4">Job Description</h2>
+          <p className="text-gray-600 leading-relaxed mb-6">{selectedJob?.description}</p>
           
-          {/* लेफ्ट कॉलम: पूरी डिटेल्स */}
-          <div className="lg:col-span-2 space-y-6">
-            
-            {/* जॉब डिस्क्रिप्शन */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="font-bold text-lg text-gray-800 border-b pb-3 mb-4">Job Description</h2>
-              <p className="text-gray-600 text-sm leading-relaxed">
-               We are looking for an experienced Senior Frontend Developer who can scale our core web application. You should have expertise in delivering excellent user experiences (UX) and writing clean, tested React code.
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-6">
+            <div className="flex items-center gap-3 text-gray-600">
+              <MapPin size={20} className="text-gray-400" />
+              <span>{selectedJob?.location}</span>
             </div>
-
-            {/* जिम्मेदारियां और आवश्यकताएं */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="font-bold text-lg text-gray-800 border-b pb-3 mb-4">Responsibilities & Requirements</h2>
-              <h3 className="font-semibold text-sm text-gray-700 mb-2">मुख्य जिम्मेदारियां:</h3>
-              <ul className="list-disc list-inside text-sm text-gray-600 space-y-2 mb-4">
-                <li>रिस्पॉन्सिव और हाई-परफॉर्मेंस UI कंपोनेंट्स बनाना।</li>
-                <li>बैकएंड REST APIs और वेबसॉकेट्स को इंटीग्रेट करना।</li>
-                <li>कोड क्वालिटी, ऑप्टिमाइज़ेशन और रिव्यू को मेंटेन करना।</li>
-              </ul>
-              <h3 className="font-semibold text-sm text-gray-700 mb-2">ज़रूरी स्किल्स:</h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {["React", "Node.js", "MongoDB", "JavaScript", "Tailwind CSS"].map((skill, i) => (
-                  <span key={i} className="px-3 py-1 bg-purple-50 text-purple-700 font-medium text-xs rounded-full">{skill}</span>
-                ))}
-              </div>
+            <div className="flex items-center gap-3 text-gray-600">
+              <Briefcase size={20} className="text-gray-400" />
+              <span>{selectedJob?.jobType}</span>
             </div>
-
-            {/* बेनिफिट्स (Benefits) */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="font-bold text-lg text-gray-800 border-b pb-3 mb-4">Benefits & Perks</h2>
-              <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
-                <div>🏠 Remote Work Allowed</div>
-                <div>🏥 Health Insurance</div>
-                <div>📈 Performance Bonus</div>
-                <div>☕ Free Snacks & Drinks</div>
-              </div>
+            <div className="flex items-center gap-3 text-gray-600">
+              <DollarSign size={20} className="text-gray-400" />
+              <span>{selectedJob?.salary} LPA</span>
+            </div>
+            <div className="flex items-center gap-3 text-gray-600">
+              <Calendar size={20} className="text-gray-400" />
+              <span>Experience: {selectedJob?.experience} Years</span>
             </div>
           </div>
-
-          {/* राइट कॉलम: क्विक ओवरव्यू और कंपनी प्रोफाइल */}
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-              <h2 className="font-bold text-lg text-gray-800 border-b pb-3">Job Overview</h2>
-              <div className="space-y-3.5 text-sm text-gray-600">
-                <div className="flex justify-between">
-                  <span className="text-gray-400 flex items-center gap-1"><Briefcase size={14} /> Job Type:</span>
-                  <span className="font-medium text-gray-800">Full Time / Remote</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400 flex items-center gap-1"><DollarSign size={14} /> Salary:</span>
-                  <span className="font-medium text-gray-800">6-10 LPA</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400 flex items-center gap-1"><Users size={14} /> Openings:</span>
-                  <span className="font-medium text-gray-800">4 Positions</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400 flex items-center gap-1"><Calendar size={14} /> Posted Date:</span>
-                  <span className="font-medium text-gray-800">25 June 2026</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400 flex items-center gap-1"><Calendar size={14} /> Apply Before:</span>
-                  <span className="font-medium text-red-600">25 July 2026</span>
-                </div>
-              </div>
-            </div>
-
-            {/* कंपनी प्रोफाइल */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-              <div className="w-14 h-14 bg-purple-700 text-white rounded-xl flex items-center justify-center font-bold text-xl mx-auto mb-3 shadow-inner">
-                T
-              </div>
-              <h3 className="font-bold text-md text-gray-800">Tech Mahindra</h3>
-              <p className="text-xs text-gray-400 mt-1">IT & Software Services</p>
-              <div className="flex justify-center gap-1 text-amber-500 my-2 text-sm">⭐⭐⭐⭐★ <span className="text-gray-500 text-xs">(4.2)</span></div>
-              <button className="mt-2 w-full py-2 border rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
-                <Globe size={12} /> Visit Website
-              </button>
-            </div>
-          </div>
-
         </div>
 
       </div>

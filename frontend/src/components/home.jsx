@@ -8,8 +8,8 @@ const Home = () => {
     const navigate = useNavigate();
 
     // लोकल स्टोरेज से लाइव डेटा
-    const currentJobs = JSON.parse(localStorage.getItem('jobPortalAllJobs')) || allJobs;
-    const liveApplications = JSON.parse(localStorage.getItem('jobPortalApplications')) || applications;
+    const allPortalJobs = JSON.parse(localStorage.getItem('jobPortalAllJobs')) || allJobs;
+    const allPortalApps = JSON.parse(localStorage.getItem('jobPortalApplications')) || applications;
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     useEffect(() => {
@@ -25,18 +25,18 @@ const Home = () => {
             localStorage.removeItem('jobPortalApplications');
             localStorage.removeItem('jobPortalAllJobs');
             setApplications([]);
-            alert("सारा पुराना डेटा साफ़ हो गया है भाई!");
+            alert("All the old data has been cleared!");
             window.location.reload();
         }
     };
 
     // =========================================================================
-    // 🌟 डायनामिक कैटेगरी फिक्स: लाइव काउंट्स निकालना भाई
+    // 🌟 डायनामिक कैटेगरी फिक्स: लाइव काउंट्स निकालना भाई (स्टूडेंट को सब दिखेगा)
     // =========================================================================
-    const frontendCount = currentJobs.filter(j => j.title?.toLowerCase().includes('frontend') || j.title?.toLowerCase().includes('react') || j.description?.toLowerCase().includes('frontend')).length;
-    const backendCount = currentJobs.filter(j => j.title?.toLowerCase().includes('backend') || j.title?.toLowerCase().includes('node') || j.description?.toLowerCase().includes('backend')).length;
-    const fullStackCount = currentJobs.filter(j => j.title?.toLowerCase().includes('stack') || j.title?.toLowerCase().includes('mern')).length;
-    const internshipCount = currentJobs.filter(j => j.jobType?.toLowerCase() === 'internship').length;
+    const frontendCount = allPortalJobs.filter(j => j.title?.toLowerCase().includes('frontend') || j.title?.toLowerCase().includes('react') || j.description?.toLowerCase().includes('frontend')).length;
+    const backendCount = allPortalJobs.filter(j => j.title?.toLowerCase().includes('backend') || j.title?.toLowerCase().includes('node') || j.description?.toLowerCase().includes('backend')).length;
+    const fullStackCount = allPortalJobs.filter(j => j.title?.toLowerCase().includes('stack') || j.title?.toLowerCase().includes('mern')).length;
+    const internshipCount = allPortalJobs.filter(j => j.jobType?.toLowerCase() === 'internship').length;
 
     const categories = [
         { name: "Frontend Development", icon: "💻", count: `${frontendCount} Live Jobs`, keyword: "frontend" },
@@ -45,9 +45,7 @@ const Home = () => {
         { name: "Internship Programs", icon: "🎓", count: `${internshipCount} Openings`, keyword: "internship" }
     ];
 
-    // 🌟 कैटेगरी पर क्लिक करने पर सीधे सर्च फ़िल्टर एक्टिवेट करने का फ़ंक्शन भाई
     const categoryClickHandler = (cat) => {
-        // जॉब्स पेज पर कीवर्ड पास करने के लिए स्टेट का उपयोग करके नेविगेट करें
         if (cat.keyword === "internship") {
             navigate('/jobs', { state: { filterType: 'Internship' } });
         } else {
@@ -56,18 +54,22 @@ const Home = () => {
     };
 
     // =========================================================================
-    // 💼 1. RECRUITER DASHBOARD
+    // 💼 1. RECRUITER DASHBOARD (🎯 100% प्राइवेट फ़िल्टर लागू भाई)
     // =========================================================================
     if (currentUser && currentUser.role?.toLowerCase() === 'recruiter') {
-        const totalApplicationsCount = liveApplications.length;
-        const fullTimeCount = currentJobs.filter(j => j.jobType?.toLowerCase() === 'full-time').length;
-        const liveInternCount = currentJobs.filter(j => j.jobType?.toLowerCase() === 'internship').length;
-        const selectedCount = liveApplications.filter(app => app.status === 'Selected').length;
-        const rejectedCount = liveApplications.filter(app => app.status === 'Rejected').length;
-        const pendingCount = totalApplicationsCount - (selectedCount + rejectedCount);
+        
+        // 🌟 जादुई फ़िल्टर: सिर्फ इस पर्टिकुलर रिक्रूटर की जॉब्स और एप्लिकेशन्स निकालें
+        const myJobs = allPortalJobs.filter(job => job.createdById === currentUser?.id);
+        const myReceivedApplications = allPortalApps.filter(app => app.recruiterId === currentUser?.id);
+
+        const totalApplicationsCount = myReceivedApplications.length;
+        const fullTimeCount = myJobs.filter(j => j.jobType?.toLowerCase() === 'full-time').length;
+        const liveInternCount = myJobs.filter(j => j.jobType?.toLowerCase() === 'internship').length;
+        const selectedCount = myReceivedApplications.filter(app => app.status === 'Selected').length;
+        const rejectedCount = myReceivedApplications.filter(app => app.status === 'Rejected').length;
 
         return (
-            <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+            <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', backgroundColor: '#f0edfa' }}>
                 <Navbar />
                 <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '0 20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row', gap: '10px', marginBottom: '25px' }}>
@@ -77,8 +79,9 @@ const Home = () => {
                         <button onClick={clearDataHandler} style={{ padding: '8px 16px', backgroundColor: '#EF4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>🗑️ Clear Test Data</button>
                     </div>
 
+                    {/* 📊 सिर्फ इस रिक्रूटर का लाइव काउंट */}
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
-                        <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '6px solid #6A38C2' }}><h3 style={{ fontSize: '11px', color: '#6B7280', textTransform: 'uppercase', margin: 0 }}>Total Listings</h3><p style={{ fontSize: '26px', fontWeight: 'bold', margin: '5px 0 0 0' }}>{currentJobs.length}</p></div>
+                        <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '6px solid #6A38C2' }}><h3 style={{ fontSize: '11px', color: '#6B7280', textTransform: 'uppercase', margin: 0 }}>Total Listings</h3><p style={{ fontSize: '26px', fontWeight: 'bold', margin: '5px 0 0 0' }}>{myJobs.length}</p></div>
                         <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '6px solid #F83002' }}><h3 style={{ fontSize: '11px', color: '#6B7280', textTransform: 'uppercase', margin: 0 }}>Total Apps</h3><p style={{ fontSize: '26px', fontWeight: 'bold', margin: '5px 0 0 0' }}>{totalApplicationsCount}</p></div>
                         <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '6px solid #7C3AED' }}><h3 style={{ fontSize: '11px', color: '#6B7280', textTransform: 'uppercase', margin: 0 }}>💼 Full-Time</h3><p style={{ fontSize: '26px', fontWeight: 'bold', margin: '5px 0 0 0' }}>{fullTimeCount}</p></div>
                         <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '6px solid #0284C7' }}><h3 style={{ fontSize: '11px', color: '#6B7280', textTransform: 'uppercase', margin: 0 }}>🎓 Internships</h3><p style={{ fontSize: '26px', fontWeight: 'bold', margin: '5px 0 0 0' }}>{liveInternCount}</p></div>
@@ -92,14 +95,18 @@ const Home = () => {
                                     <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left', color: '#6B7280', fontSize: '13px' }}><th style={{ paddingBottom: '10px' }}>Role / Title</th><th style={{ paddingBottom: '10px' }}>Type</th><th style={{ paddingBottom: '10px' }}>Location</th><th style={{ paddingBottom: '10px' }}>Salary</th></tr>
                                 </thead>
                                 <tbody>
-                                    {currentJobs.slice(0, 5).map((job, index) => (
-                                        <tr key={job.id || index} style={{ borderBottom: '1px solid #F3F4F6', fontSize: '14px' }}>
-                                            <td style={{ padding: '12px 0', fontWeight: 500 }}>{job.title}</td>
-                                            <td style={{ padding: '12px 0' }}><span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold', backgroundColor: job.jobType === 'Internship' ? '#E0F2FE' : '#F3E8FF', color: job.jobType === 'Internship' ? '#0369A1' : '#6B21A8' }}>{job.jobType}</span></td>
-                                            <td style={{ padding: '12px 0', color: '#4B5563' }}>{job.location}</td>
-                                            <td style={{ padding: '12px 0', color: '#10B981', fontWeight: 600 }}>{job.salary}</td>
-                                        </tr>
-                                    ))}
+                                    {myJobs.length === 0 ? (
+                                        <tr><td colSpan="4" style={{ padding: '20px 0', textAlign: 'center', color: '#9CA3AF' }}>You haven't posted any jobs!</td></tr>
+                                    ) : (
+                                        myJobs.slice(0, 5).map((job, index) => (
+                                            <tr key={job.id || index} style={{ borderBottom: '1px solid #F3F4F6', fontSize: '14px' }}>
+                                                <td style={{ padding: '12px 0', fontWeight: 500 }}>{job.title}</td>
+                                                <td style={{ padding: '12px 0' }}><span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold', backgroundColor: job.jobType === 'Internship' ? '#E0F2FE' : '#F3E8FF', color: job.jobType === 'Internship' ? '#0369A1' : '#6B21A8' }}>{job.jobType}</span></td>
+                                                <td style={{ padding: '12px 0', color: '#4B5563' }}>{job.location}</td>
+                                                <td style={{ padding: '12px 0', color: '#10B981', fontWeight: 600 }}>{job.salary}</td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -118,12 +125,12 @@ const Home = () => {
     }
 
     // =========================================================================
-    // 🎓 2. STUDENT HOME VIEW (With Smooth Hover Classes & Live Click Filter)
+    // 🎓 2. STUDENT HOME VIEW (सभी रिक्रूटर्स की जॉब्स दिखेंगी)
     // =========================================================================
-    const myTotalApplicationsCount = liveApplications.filter(app => app.studentEmail === currentUser?.email).length;
+    const myTotalApplicationsCount = allPortalApps.filter(app => app.studentEmail === currentUser?.email).length;
 
     return (
-        <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+        <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', backgroundColor: '#f0edfa' }}>
             <Navbar />
             
             {/* HERO SECTION */}
@@ -135,12 +142,12 @@ const Home = () => {
                 
                 <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', fontSize: '14px', fontWeight: 600, alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
                     <span style={{ backgroundColor: '#E0F2FE', color: '#0369A1', padding: '6px 12px', borderRadius: '6px' }}>📝 Total Applied: {myTotalApplicationsCount}</span>
-                    <span style={{ backgroundColor: '#F5F3FF', color: '#7C3AED', padding: '6px 12px', borderRadius: '6px' }}>💼 Available: {currentJobs.length}</span>
+                    <span style={{ backgroundColor: '#F5F3FF', color: '#7C3AED', padding: '6px 12px', borderRadius: '6px' }}>💼 Available: {allPortalJobs.length}</span>
                     <button onClick={clearDataHandler} style={{ padding: '6px 12px', backgroundColor: '#EF4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>🗑️ Reset Count</button>
                 </div>
             </div>
 
-            {/* 🌟 UPGRADED BROWSE BY CATEGORY SECTION */}
+            {/* BROWSE BY CATEGORY SECTION */}
             <div style={{ maxWidth: '1200px', margin: '10px auto 40px auto', padding: '0 20px' }}>
                 <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827', marginBottom: '20px', textAlign: isMobile ? 'center' : 'left' }}>Browse By Category</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '20px' }}>
@@ -184,12 +191,12 @@ const Home = () => {
                     <button onClick={() => navigate('/jobs')} style={{ border: 'none', backgroundColor: 'transparent', color: '#6A38C2', fontWeight: 'bold', cursor: 'pointer' }}>View All →</button>
                 </div>
                 
-                {currentJobs.length === 0 ? (
+                {allPortalJobs.length === 0 ? (
                     <p style={{ color: '#6B7280', textAlign: 'center' }}>There are no active jobs or internships available.</p>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                        {currentJobs.slice(0, 6).map((job, index) => (
-                            <div key={job.id || index} style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12 rgba(0,0,0,0.02)', border: '1px solid #e5e7eb' }}>
+                        {allPortalJobs.slice(0, 6).map((job, index) => (
+                            <div key={job.id || index} style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)', border: '1px solid #e5e7eb' }}>
                                 <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 5px 0' }}>{job.title}</h3>
                                 <p style={{ fontSize: '13px', color: '#4B5563', margin: '0 0 15px 0', minHeight: '38px' }}>{job.description}</p>
                                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '15px' }}>
@@ -197,7 +204,7 @@ const Home = () => {
                                     <span style={{ padding: '3px 6px', backgroundColor: '#F5F3FF', color: '#7C3AED', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>💰 {job.salary}</span>
                                     <span style={{ padding: '3px 6px', backgroundColor: job.jobType === 'Internship' ? '#E0F2FE' : '#F3F4F6', color: job.jobType === 'Internship' ? '#0369A1' : '#4B5563', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>{job.jobType}</span>
                                 </div>
-                                <button onClick={() => navigate('/jobs')} style={{ width: '100%', padding: '8px', backgroundColor: '#ffffff', color: '#6A38C2', border: '1px solid #6A38C2', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Explore & Apply</button>
+                                <button onClick={() => navigate(`/description/${job.id || job._id}`)} style={{ width: '100%', padding: '8px', backgroundColor: '#ffffff', color: '#6A38C2', border: '1px solid #6A38C2', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Explore & Apply</button>
                             </div>
                         ))}
                     </div>

@@ -1,6 +1,15 @@
-import React from 'react';
+// 1. 🔑 सेशन स्टोरेज से करंट लॉगिन रिक्रूटर का डेटा निकालें
+const currentUser = JSON.parse(sessionStorage.getItem('jobPortalUser'));
 
-const Dashboard = () => {
+// 2. 💼 लोकल स्टोरेज से सभी नौकरियां और सभी एप्लिकेशन्स उठाएं
+const allPortalJobs = JSON.parse(localStorage.getItem('jobPortalAllJobs')) || [];
+const allPortalApps = JSON.parse(localStorage.getItem('jobPortalApplications')) || [];
+
+// 🎯 3. सिर्फ इस रिक्रूटर की खुद की नौकरियां फ़िल्टर करें
+const myJobs = allPortalJobs.filter(job => job.createdById === currentUser?.id);
+
+// 🎯 4. सिर्फ इस रिक्रूटर की नौकरियों पर आई हुई एप्लिकेशन्स फ़िल्टर करें
+const myApplications = allPortalApps.filter(app => app.recruiterId === currentUser?.id);
   return (
     <div className="max-w-7xl mx-auto px-4 my-12 font-sans">
       <h2 className="text-3xl font-bold text-gray-800 mb-2">

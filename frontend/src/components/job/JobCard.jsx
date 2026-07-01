@@ -8,7 +8,7 @@ const JobCard = ({ job }) => {
 
   return (
     <div 
-      onClick={() => navigate(`/description/${job?._id}`)} // 🚀 क्लिक करने पर सीधे जॉब डिटेल्स पेज खुलेगा असली ID के साथ
+      onClick={() => navigate(`/description/${job?.id || job?._id}`)} // 🚀 क्लिक करने पर सीधे जॉब डिटेल्स पेज खुलेगा असली ID के साथ
       className="p-6 rounded-xl shadow-md bg-white border border-gray-100 cursor-pointer hover:shadow-2xl transition-all duration-300 relative"
     >
       
