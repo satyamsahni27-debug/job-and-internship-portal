@@ -5,8 +5,15 @@
 /* =========================================================================
    🌟 ALL-IN-ONE GLOBAL RESPONSIVE MEDIA QUERIES (NO FUNCTION DAMAGE)
    ========================================================================= */
+body, #root, #root > div {
+  background-color: #f0edfa !important; /* 🌟 यह पूरे ऐप के मुख्य डिब्बों पर नया रंग थोप देगा */
+  color: #1c52c5;
+  font-family: 'sans-serif';
+}
 
-/* 📱 1. मोबाइल स्क्रीन के लिए (Max Width: 768px) */
+
+
+   /* 📱 1. मोबाइल स्क्रीन के लिए (Max Width: 768px) */
 @media screen and (max-width: 768px) {
     
     /* 🌐 ग्लोबल कंटेनर्स को ऑटो-फिट करना */

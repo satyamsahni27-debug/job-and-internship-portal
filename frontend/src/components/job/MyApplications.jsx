@@ -29,7 +29,7 @@ const MyApplications = () => {
                 <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
                     {myFilteredApplications.length === 0 ? (
                         <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 20px', margin: 0 }}>
-                            आपने अभी तक किसी सक्रिय नौकरी के लिए अप्लाई नहीं किया है भाई!
+                            You haven't applied for any active job!
                         </p>
                     ) : (
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
