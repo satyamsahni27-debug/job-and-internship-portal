@@ -13,7 +13,7 @@ const Signup = () => {
     const submitHandler = (e) => {
         e.preventDefault();
         if (!input.name || !input.email) {
-            alert("कृपया नाम और ईमेल दोनों भरें भाई!");
+            alert("Please fill in both your name and email!");
             return;
         }
 
@@ -21,7 +21,7 @@ const Signup = () => {
         const userExists = existingUsers.some(u => u.email === input.email);
         
         if (userExists) {
-            alert("यह ईमेल पहले से रजिस्टर्ड है भाई! सीधे लॉगिन करें।");
+            alert("This email is already registered,Just log in directly.");
             navigate('/login');
             return;
         }
@@ -43,7 +43,7 @@ const Signup = () => {
         existingUsers.push(newUser);
         localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
 
-        alert("अकाउंट सफलतापूर्वक बन गया है भाई! अब लॉगिन करें।");
+        alert("The account has been successfully created,Now log in.");
         navigate('/login');
     };
 
