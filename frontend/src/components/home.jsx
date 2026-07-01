@@ -21,14 +21,37 @@ const Home = () => {
     const currentUser = user || JSON.parse(sessionStorage.getItem('jobPortalUser'));
 
     const clearDataHandler = () => {
-        if(window.confirm("Do you really want to clear the old test data and reset the count to zero, brother")) {
-            localStorage.removeItem('jobPortalApplications');
-            localStorage.removeItem('jobPortalAllJobs');
-            setApplications([]);
-            alert("All the old data has been cleared!");
+    if (!currentUser) {
+        alert("Please log in first! 🔑");
+        return;
+    }
+
+    // 👨‍🎓 अगर लॉगिन करने वाला यूजर एक STUDENT है
+    if (currentUser.role?.toLowerCase() === 'student') {
+        if (window.confirm("Do you want to clear the history of all the jobs you have applied for? ")) {
+            const allApplications = JSON.parse(localStorage.getItem('jobPortalApplications')) || [];
+            
+            // 🎯 सिर्फ इस स्टूडेंट की एप्लिकेशन्स को हटाओ, बाकी बच्चों का डेटा सेफ रहेगा
+            const remainingApplications = allApplications.filter(app => app.studentEmail !== currentUser.email);
+            
+            localStorage.setItem('jobPortalApplications', JSON.stringify(remainingApplications));
+            if (typeof setApplications === 'function') setApplications(remainingApplications);
+
+            alert("The count of jobs you applied for has been reset!🎉");
             window.location.reload();
         }
-    };
+    } 
+    // 👔 अगर लॉगिन करने वाला यूजर एक RECRUITER है
+    else if (currentUser.role?.toLowerCase() === 'recruiter') {
+        if (window.confirm("Recruiter, do you really want to clear all the global testing data? This will delete all the jobs.")) {
+            localStorage.removeItem('jobPortalApplications');
+            localStorage.removeItem('jobPortalAllJobs');
+            if (typeof setApplications === 'function') setApplications([]);
+            alert("All the test data has been wiped clean!");
+            window.location.reload();
+        }
+    }
+};
 
     // =========================================================================
     // 🌟 डायनामिक कैटेगरी फिक्स: लाइव काउंट्स निकालना भाई (स्टूडेंट को सब दिखेगा)
